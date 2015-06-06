@@ -1,19 +1,86 @@
 import random
 
+class Donjon():
+    def __init__(self):
+        print("l'aventure a commencé")
+        self.joueur = Aventurier()
+        self.tours = 0
+        self.tour()
+
+    def tour(self):
+        choix = None
+        while choix!='s':
+            self.tours+=1
+            print("Tour #",self.tours)
+            self.joueur.whois()
+            print("\t(e)ntrer dans une piece")
+            print("\tse (r)eposer")
+            print("\tse s(o)igner")
+            print("\t(m)anger")
+            print("\t(i)nventaire")
+            print("\t(s)ortir du donjon")
+            choix = input("Que voulez vous faire?")
+            if choix=='r':
+                self.joueur.repos()
+            if choix=='o':
+                self.joueur.soigner()
+            if choix=='m':
+                self.joueur.manger()
+            if choix=="i":
+                self.joueur.inventaire()
+            if choix=='e':
+                piece=Piece()
+                resolution = piece.remplirPiece(self.joueur)
+                if resolution=='mort':
+                    self.mort()
+                    break
+        self.fin()
+        return(None)
+
+    def fin(self):
+        print("La partie se termine apres",self.tours,"tours")
+        self.joueur.inventaire()
+        if "pieces d'or" in self.joueur.sac.keys():
+            print("vous avez",self.joueur.sac["pieces d'or"],"pieces d'or")
+        return(None)
+
+    def mort(self):
+        print("Voues etes mort mais vous ferez mieux la prochaine fois")
+        return(None)
+
+
 class Piece():
     def __init__(self):
+        print('Vous entrez dans une piece...')
+        return(None)
+
+    def remplirPiece(self,joueur):
         # chaque piece a 1 chance sur 10 de contenir un monstre
         # et une chance sur 10 de contenir un tresor
-        print('Vous entrez dans une piece...')
         self.monstre = None
         self.tresor = None
+        resolution = "victoire"
         # est-ce qu'il y a un tresor?
-        if random.randint(1,10)==10:
+        if random.randint(1,10)<5:
             self.tresor = {"pieces d'or":random.randint(10,100)}
-        if random.randint(1,10)==10:
-            self.monstre = {"Gobelin":random.randint(10,100)}
-        tresor = Gallions=+100
-        return(None)
+        if random.randint(1,10)>=5:
+            if random.randint(1,3)>1:
+                self.monstre = Gobelin()
+            else:
+                self.monstre = Elfe()
+        if not self.monstre is None:
+            print("IL Y A UN MONSTRE LA DEDANS!!")
+            self.monstre.whois()
+            resolution = baston(joueur,self.monstre)
+        if resolution=='victoire':
+            if not self.tresor is None:
+                print("vous avez trouve:")
+                for objet,n in self.tresor.items():
+                      print(n,objet)
+                joueur.sac.update(self.tresor)
+            else:
+                print("La piece est vide...")
+        return(resolution)
 
 class Personnage:
     def __init__(self):
@@ -78,7 +145,7 @@ class Personnage:
             if self.sac['potions']>0:
                 print('vous etes soigne')
                 self.sac['potions']-=1
-                self.vie=10
+                self.vie+=2
         else:
             print("vous n'avez plus de potions")
             return(None)
@@ -153,7 +220,7 @@ class Elfe(Personnage):
         self.ac = 1
         self.sac = {'fleches':1,
                     'rations':10}
-        self.armes['arc composite'] = 5
+        self.armes['arc composite'] = 3
         self.armures = {'armure de camouflage':4}
         self.armures['armure de camouflage'] = 4
         self.classe = "Elfe"
@@ -183,53 +250,72 @@ def baston(joueur1,joueur2):
             print(joueurs[0].nom,"a loupe",joueurs[1].nom,"!")
         return(joueurs)
 
-    i = 0
-    while min(joueur1.vie,joueur2.vie)>0:
-        print("Tour #",i+1)
-        print("vie des joueurs:")
-        print(joueur1.nom,joueur1.vie,joueur2.nom,joueur2.vie)
-        #definir l'initiative
-        init1 = random.randint(1,6)
-        init2 = random.randint(1,6)
-        if init1<init2:
-            joueurs = [joueur1,joueur2]
-        else:
-            joueurs = [joueur2,joueur1]
-        print(joueurs[0].nom,"a l'initiative!")  
-        premier joueurs frappe
-        joueurs = frappe(joueurs)
-         deuxieme joueur vivant?
-        if joueurs[1].vie>0:
-             deuxieme joueur frappe
-            joueurs.reverse()
+    i = 0 
+    choix = 'c'
+    while choix=='c' :
+        choix = input('(c)ombattre ou (f)uir? ')
+        if choix=='c':
+            print("Tour #",i+1)
+            print("vie des joueurs:")
+            print(joueur1.nom,joueur1.vie,joueur2.nom,joueur2.vie)
+            #definir l'initiative
+            init1 = random.randint(1,6)
+            init2 = random.randint(1,6)
+            if init1<init2:
+                joueurs = [joueur1,joueur2]
+            else:
+                joueurs = [joueur2,joueur1]
+            print(joueurs[0].nom,"a l'initiative!")  
+            # premier joueurs frappe
             joueurs = frappe(joueurs)
-        print()
-        i+=1  i = i+1
-     resolution
-     qui est mort?
-    if joueur1.vie<0:
-        print(joueur1.nom,"a ete tue par",joueur2.nom)
-    else:
-        print(joueur2.nom,"a ete tue par",joueur1.nom)
-    return(None)
+            # deuxieme joueur vivant?
+            if joueurs[1].vie>0:
+                # deuxieme joueur frappe
+                joueurs.reverse()
+                joueurs = frappe(joueurs)
+            if min(joueur1.vie,joueur2.vie)<=0:
+                if joueur1.vie<0:
+                    print(joueur1.nom,"a ete tue par",joueur2.nom)
+                    resolution='mort'
+                else:
+                    print(joueur2.nom,"a ete tue par",joueur1.nom)
+                    resolution='victoire'
+                break
+            print()
+            i+=1 # i = i+1
+        elif choix=='f':
+            print("Vous prenez la fuite...")
+            if random.randint(1,6)==1:
+                print("... Mais",joueur2.nom,"vous rattrape!")
+                perdu = list(joueur1.sac.keys())
+                perdu = perdu[random.randint(0,len(perdu)-1)]
+                print(joueur2.nom,"vous a pris un",perdu)
+                joueur1.pose(perdu)
+            else:
+                print("... et vous reussissez a echapper a",joueur2.nom)
+            resolution='fuite'
+    return(resolution)
 
 if __name__=='__main__':
-    print("l'aventure a commencé")
-    joueur = Aventurier()
-    joueur.whois()
-    joueur.inventaire()
-    joueur.pose('rations')
-    joueur.inventaire()
-    joueur.pose("sac de couchage")
-    joueur.inventaire()
-    joueur.manger()
-    joueur.soigner()
-    joueur.inventaire()
-    joueur.marcher()
-    joueur.repos()
-    monstre = Gobelin()
-    monstre2 = Elfe()
-    monstre.whois()
-    monstre.inventaire()
-    baston(monstre,monstre2)
-    piece = Piece()
+##    print("l'aventure a commencé")
+##    joueur = Aventurier()
+##    joueur.whois()
+##    joueur.inventaire()
+##    joueur.pose('rations')
+##    joueur.inventaire()
+##    joueur.pose("sac de couchage")
+##    joueur.inventaire()
+##    joueur.manger()
+##    joueur.soigner()
+##    joueur.inventaire()
+##    joueur.marcher()
+##    joueur.repos()
+##    monstre = Gobelin()
+##    monstre2 = Elfe()
+##    monstre.whois()
+##    monstre.inventaire()
+##    baston(monstre,monstre2)
+##    piece = Piece()
+##    resolution = piece.remplirPiece(joueur)
+##    print(resolution)
+    Donjon()
